@@ -1,51 +1,44 @@
+
 # 🤖 vue-fastapi-jwt-ai-agent
 
 Last updated: 18-10-2026
 
-A Vue 3 frontend using Pinia for state management and JWT authentication, designed to interact with a FastAPI AI Agent API.
+A Vue 3 frontend using Pinia for state management and JWT authentication, designed to interact with a FastAPI AI Agent backend featuring LangChain, Groq, and agentic Retrieval-Augmented Generation (RAG).
 
-This project demonstrates a complete AI agent frontend architecture:
+The application provides a secure, interactive interface where authenticated users can ask questions, receive AI-generated answers, and inspect the tools and observations used by the agent.
 
-SPA architecture → authentication → API integration → AI agent → tool execution → agent response display → local development → production build
-
-The application provides an interface where users can ask questions and receive:
-
-- AI-generated answers
-- Agent actions
-- Tool observations
-- Error handling feedback
+Vue 3 SPA → JWT Authentication → FastAPI → LangChain Agent → Private RAG + Wikipedia → AI Response
 
 ## FastAPI Backend
 
 https://github.com/persteenolsen/fastapi-jwt-auth-ai-agent-four
 
-The backend API using FastAPI, JWT authentication, LLM integration, and agent tools such as Wikipedia search.
+The backend provides JWT authentication, protected API endpoints, LLM integration, and agentic RAG.
 
-The backend provides:
+The agent uses Groq's `openai/gpt-oss-20b` model and two tools:
 
-- JWT authentication
-- Protected AI agent endpoints
-- LLM integration
-- Agent tool execution
-- Structured JSON responses
+- **Private_RAG:** Retrieves information from a private knowledge base backed by PostgreSQL on Neon.
+- **Wikipedia:** Retrieves public information when additional context is useful.
+
+The agent queries the private knowledge base before answering and can combine private document evidence with public information when appropriate.
 
 ---
 
 # 🔐 Features
 
-- Vue 3 SPA architecture
-- Pinia for global state management
+- Vue 3 single-page application (SPA)
+- Pinia state management
 - JWT authentication with bearer tokens
-- Secure authenticated API requests
-- AI agent question answering interface
-- Agent action display
-- Tool observation display
-- Final answer display
-- Error handling and feedback
-- Development server with Vite
-- Production-ready build and preview
+- Authenticated API requests to FastAPI
+- AI-powered question-answering interface
+- Integration with an agentic RAG backend
+- Private knowledge retrieval and public Wikipedia search
+- Display of agent actions and tool inputs
+- Intermediate tool observations
+- Final AI-generated answers
+- Error handling and user feedback
 - Environment-based API configuration
-- Easy deployment to static hosting
+- Vite development server and production build
 
 ---
 
@@ -55,8 +48,12 @@ The backend provides:
 - Vue 3
 - Pinia
 - Vite
-- ESLint
-- VS Code
+- FastAPI
+- JWT authentication
+- LangChain
+- Groq LLM
+- Agentic Retrieval-Augmented Generation (RAG)
+- PostgreSQL on Neon
 
 ---
 
@@ -64,15 +61,15 @@ The backend provides:
 
     .
     ├── index.html             # SPA entry point
-    ├── package.json           # Node dependencies + scripts
+    ├── package.json           # Dependencies and scripts
     ├── vite.config.js         # Vite configuration
     ├── src
     │   ├── main.js            # Vue application entry point
     │   ├── App.vue            # Root component
     │   ├── components         # Reusable Vue components
     │   ├── views              # Application pages
-    │   ├── stores             # Pinia stores (JWT auth + AI agent state)
-    │   ├── helpers            # API fetch wrappers
+    │   ├── stores             # Pinia stores for auth and agent state
+    │   ├── helpers            # API request helpers
     │   └── router             # Vue router configuration
     ├── public                 # Static assets
     └── .env                   # Environment variables
@@ -87,13 +84,13 @@ Clone the repository:
 
 Enter the project folder:
 
-    cd vue-fastapi-jwt-auth-ai-agent-three
+    cd vue-fastapi-jwt-auth-ai-agent-four
 
 Install dependencies:
 
     npm install
 
-Verify setup:
+Start the development server:
 
     npm run dev
 
@@ -101,21 +98,15 @@ Open the application:
 
     http://localhost:3000
 
+Ensure that the FastAPI backend is running and configured before submitting questions.
+
 ---
 
 # 🚀 Development
 
-Start the development server:
+Start the Vite development server:
 
     npm run dev
-
-The application will be available at:
-
-    http://localhost:3000
-
----
-
-# 📦 Production Build
 
 Create a production build:
 
@@ -133,39 +124,36 @@ Default preview address:
 
 # 🔐 Environment Variables
 
-Configure the FastAPI backend URL:
+Configure the FastAPI backend URL in your frontend `.env` file:
 
     VITE_API_URL=http://127.0.0.1:8000
+
+The backend requires its own configuration for Groq API access, JWT authentication, and database connectivity.
+
+Never commit API keys, database credentials, or JWT secrets to the repository.
 
 ---
 
 # 🧪 Usage
 
-1. Start the FastAPI AI Agent backend
-2. Start the Vue frontend:
+1. Start the FastAPI AI Agent backend.
+2. Start the Vue frontend using `npm run dev`.
+3. Open the application and log in.
+4. Enter a question in the AI Agent interface.
+5. Submit the question.
+6. Review the AI-generated answer and available agent execution details.
 
-       npm run dev
-
-3. Login through the SPA
-4. Enter a question in the AI Agent interface
-5. Submit the question
-6. Receive:
-
-   - Agent answer
-   - Agent action
-   - Tool observation
+The frontend displays the final answer and can present tool actions, inputs, and observations returned by the backend.
 
 ---
 
 # 📡 API Integration
 
-The frontend communicates with protected FastAPI endpoints.
+The frontend communicates with the FastAPI backend through HTTP requests.
 
 ## Authentication
 
 POST `/login-spa`
-
-Returns a JWT access token:
 
 Example response:
 
@@ -175,9 +163,7 @@ Example response:
       "username": "user"
     }
 
-The token is stored in the authentication store and automatically included in API requests.
-
----
+The authentication store manages the JWT access token and supplies it to authenticated API requests.
 
 ## Chat
 
@@ -186,145 +172,118 @@ POST `/chat`
 Example request:
 
     {
-      "message": "Who is the CEO of Apple?"
+      "message": "What information do our internal documents contain about Apple's leadership?"
     }
 
-Example response:
+Illustrative response structure:
 
     {
       "response": {
-        "action": "Wikipedia",
-        "action_input": "Apple CEO",
-        "observation": "Timothy Donald Cook is an American business executive...",
-        "final_answer": "The CEO of Apple is Tim Cook."
+        "action": "Private_RAG, Wikipedia",
+        "action_input": "Apple leadership",
+        "observation": [
+          {
+            "tool": "Private_RAG",
+            "tool_input": "Apple leadership",
+            "observation": "Retrieved private knowledge and source references..."
+          },
+          {
+            "tool": "Wikipedia",
+            "tool_input": "Apple leadership",
+            "observation": "Retrieved public information..."
+          }
+        ],
+        "final_answer": "The answer combines relevant private document evidence with public information.",
+        "tools_used": [
+          "Private_RAG",
+          "Wikipedia"
+        ]
       }
     }
 
+Actual tool usage and response contents depend on the question and backend execution.
+
+The response fields are:
+
+| Field | Description |
+|---|---|
+| `action` | Names of the tools used |
+| `action_input` | Input associated with the last tool execution |
+| `observation` | List of tool inputs and execution results |
+| `final_answer` | Final AI-generated answer |
+| `tools_used` | Unique tool names in execution order |
+
+The `observation` field is an array of objects, allowing the frontend to display individual tool executions.
+
 ---
 
-# 🧠 Application Flow
+# 🧠 Agentic RAG Integration
+
+The Vue application provides the user interface for an AI agent that combines private knowledge retrieval with public information search.
+
+The backend is responsible for tool selection, retrieval, and answer generation.
+
+## Private_RAG
+
+- Searches private organizational knowledge.
+- Retrieves information from the knowledge base on Domain B.
+- Uses PostgreSQL on Neon.
+- Returns an answer and source references when available.
+
+## Wikipedia
+
+- Retrieves publicly available information.
+- Supplements private knowledge when additional context is useful.
+
+The agent is instructed to query `Private_RAG` before answering, distinguish private document evidence from public information, and report when supporting private document sources are unavailable.
+
+Public information does not independently verify private organizational facts.
+
+## Application Flow
 
     User Question
           |
           v
-    Vue Application
+    Vue 3 Frontend
           |
           v
-    FastAPI Agent API
+    FastAPI Backend
           |
           v
-    LLM Agent
-          |
-          +---- Tool Selection
-          |
-          +---- Tool Execution
-          |
-          +---- Observation
+    LangChain Agent + Groq LLM
           |
           v
-    Final Answer Returned To User
+    Private RAG Retrieval
+          |
+          +---- Wikipedia (when useful)
+          |
+          v
+    Final Answer + Tool Observations
+          |
+          v
+    Vue Displays the Response
 
-The user can see both the final answer and the intermediate agent information.
+The frontend can display the agent's execution information, providing visibility into which tools were used and what observations were returned.
 
----
-
-# 📋 Displayed Information
-
-The application provides an interface where users can ask questions and receive:
-
-- AI-generated answers
-- Agent actions
-- Tool observations
-- Error handling feedback
-
----
-
-# 🏗️ Design
-
-# 🧠 Key Design Features
-
-- Global Pinia store for authentication state
-- Dedicated Pinia store for AI agent state
-- JWT bearer authentication handling
-- Clean separation between frontend and backend logic
-- Agent response parsing and display
-- Tool action visibility for transparency
-- Observation display for debugging and explainability
-- Environment-based API configuration
-- Vue SPA architecture
+For implementation details about the agent, retrieval pipeline, and database integration, see the [FastAPI backend repository](https://github.com/persteenolsen/fastapi-jwt-auth-ai-agent-four).
 
 ---
 
 # 💡 Use Cases
 
-This Vue frontend can be used as a general-purpose interface for FastAPI-based AI agent systems.
+This frontend can serve as a foundation for:
 
-## 💬 AI Chat Assistants
+- 💬 AI chat assistants
+- 📚 Private document question-answering
+- 🏢 Internal organizational knowledge assistants
+- 🔎 Tool-based research assistants
+- 🛠️ Developer and documentation assistants
+- 🔐 Authenticated AI applications
 
-- Build AI-powered assistants for internal or customer applications
-- Provide conversational access to information
-- Combine LLM reasoning with external tools
-- Display transparent agent execution steps
-
-Examples:
-
-- Customer support assistants
-- Internal knowledge assistants
-- Personal AI assistants
-- FAQ agents
-
-## 🔎 Tool-Based AI Systems
-
-- Connect AI models with external tools
-- Show which tools were selected
-- Display tool results and observations
-
-Examples:
-
-- Wikipedia research agents
-- Search assistants
-- Data lookup assistants
-- Information retrieval agents
-
-## 🏢 Enterprise AI Applications
-
-- Create authenticated AI assistants
-- Control access using JWT authentication
-- Connect users with company knowledge systems
-
-Examples:
-
-- Employee assistants
-- Internal support portals
-- Business knowledge agents
-- Training assistants
-
-## 🛠️ Developer Assistants
-
-- Build AI tools for technical workflows
-- Connect agents with documentation and APIs
-- Help developers retrieve information faster
-
-Examples:
-
-- API assistants
-- Documentation agents
-- Coding assistants
-- DevOps helpers
-
-## 🔐 Secure AI Applications
-
-With JWT authentication and protected FastAPI endpoints, this frontend supports applications where AI access must be controlled.
-
-Examples:
-
-- Private AI assistants
-- Customer portals
-- Member-only applications
-- Role-based AI systems
+The architecture separates the Vue user interface from the backend agent logic, making it easier to maintain and extend the application.
 
 ---
 
 # 👨‍💻 Author
 
-Built as a Vue 3 SPA demonstrating secure JWT authentication, Pinia state management, and integration with a FastAPI AI Agent backend.
+Built as a Vue 3 SPA demonstrating JWT authentication, Pinia state management, and integration with a FastAPI AI Agent backend featuring LangChain, Groq, private knowledge retrieval, and agentic RAG.

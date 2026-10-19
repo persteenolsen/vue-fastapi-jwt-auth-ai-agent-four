@@ -20,10 +20,10 @@ function onSubmit(values, { setErrors }) {
 
 <template>
     <div>
-        <h3>AI Agent Chat Assistant with Tool Integration Using LangChain, FastAPI and Vue</h3>
+        <h3>Agentic RAG Chat Assistant with Tool Integration Using LangChain, FastAPI, and Vue</h3>
         
         <br/><br />
-        Last updated: 18-10-2026<br /><br />
+        Last updated: 19-10-2026<br /><br />
         
         <h2>Login</h2>
         <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }">

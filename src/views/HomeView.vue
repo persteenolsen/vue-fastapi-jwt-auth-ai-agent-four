@@ -4,7 +4,7 @@
   </div>
 
   <div class="home">
-    <h2>AI Agent</h2>
+    <h2>Agentic RAG Chat Assistant</h2>
 
     <form @submit.prevent="handleChat">
 

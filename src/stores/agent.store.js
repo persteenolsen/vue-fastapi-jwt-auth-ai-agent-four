@@ -50,9 +50,21 @@ export const useAgentStore = defineStore({
                 const result = data?.response ?? {};
 
                 this.answer = clean(result.final_answer);
-
-                this.observation = clean(result.observation);
-
+                
+                // 19-10-2026 - Simple code for displaying observation from fastapi
+                // this.observation = clean(result.observation?.[0]?.observation);
+                
+                // 19-10-2026 - Robust code for displaying observation from fastapi
+                const obs = result.observation;
+                this.observation = clean(
+                   Array.isArray(obs)
+                   ? obs.map(item => item?.observation ?? "").filter(Boolean).join("\n\n")
+                   : typeof obs === "object" && obs !== null
+                   ? obs.observation ?? JSON.stringify(obs, null, 2)
+                   : obs
+                 );
+                
+                // Here the original code continues from the above change ...
                 const action = clean(result.action);
                 const actionInput = clean(result.action_input);
 

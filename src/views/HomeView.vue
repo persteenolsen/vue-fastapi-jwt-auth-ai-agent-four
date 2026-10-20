@@ -1,3 +1,4 @@
+
 <template>
   <div class="welcome" v-if="username">
     Welcome, {{ username }}!
@@ -68,6 +69,51 @@
 
     </div>
 
+    <!-- NEW: Display private RAG evidence status -->
+    <div class="section" v-if="agentStore.status !== 'unknown'">
+
+      <label>Status</label>
+
+      <div
+        class="status"
+        :class="`status-${agentStore.status}`"
+      >
+        {{ agentStore.status }}
+      </div>
+
+    </div>
+
+    <!-- NEW: Display source URLs or references -->
+    <div class="section" v-if="agentStore.source.length">
+
+      <label>Sources</label>
+
+      <ul class="sources">
+        <li
+          v-for="(item, index) in agentStore.source"
+          :key="index"
+        >
+          <a
+            v-if="typeof item === 'string' && /^https?:\/\//i.test(item)"
+            :href="item"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {{ item }}
+          </a>
+
+          <span v-else-if="typeof item === 'string'">
+            {{ item }}
+          </span>
+
+          <span v-else>
+            {{ JSON.stringify(item) }}
+          </span>
+        </li>
+      </ul>
+
+    </div>
+
     <div
       v-if="agentStore.error"
       class="error"
@@ -101,9 +147,9 @@ async function handleChat() {
 </script>
 
 <style scoped>
-.home{
-    max-width:900px;
-    margin:auto;
+.home {
+    max-width: 900px;
+    margin: auto;
 }
 
 textarea {
@@ -113,20 +159,53 @@ textarea {
     overflow-y: auto;
 }
 
-
-.section{
-    margin-top:20px;
+.section {
+    margin-top: 20px;
 }
 
-.error{
-    margin-top:20px;
-    color:red;
-    font-weight:bold;
+.error {
+    margin-top: 20px;
+    color: red;
+    font-weight: bold;
 }
 
-.welcome{
-    text-align:center;
-    color:orange;
-    margin-bottom:20px;
+.welcome {
+    text-align: center;
+    color: orange;
+    margin-bottom: 20px;
+}
+
+/* NEW: Status display */
+.status {
+    margin-top: 8px;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+}
+
+.status-sources_found {
+    color: #15803d;
+}
+
+.status-unverified {
+    color: #b45309;
+}
+
+.status-error {
+    color: #dc2626;
+}
+
+.sources {
+    margin-top: 8px;
+    padding-left: 24px;
+    overflow-wrap: anywhere;
+}
+
+.sources li {
+    margin-bottom: 8px;
+}
+
+.sources a {
+    color: #2563eb;
+    text-decoration: underline;
 }
 </style>

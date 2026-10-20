@@ -1,3 +1,4 @@
+
 import { defineStore } from "pinia";
 import { fetchWrapperAgent } from "@/helpers";
 
@@ -24,7 +25,11 @@ export const useAgentStore = defineStore({
         observation: "",
         action: "",
         loading: false,
-        error: ""
+        error: "",
+
+        // NEW: Private RAG source references and evidence status
+        source: [],
+        status: "unknown"
     }),
 
     actions: {
@@ -38,6 +43,10 @@ export const useAgentStore = defineStore({
             this.action = "";
             this.error = "";
 
+            // NEW: Reset metadata for each question
+            this.source = [];
+            this.status = "unknown";
+
             try {
 
                 const data = await fetchWrapperAgent.post(
@@ -50,21 +59,18 @@ export const useAgentStore = defineStore({
                 const result = data?.response ?? {};
 
                 this.answer = clean(result.final_answer);
-                
-                // 19-10-2026 - Simple code for displaying observation from fastapi
-                // this.observation = clean(result.observation?.[0]?.observation);
-                
-                // 19-10-2026 - Robust code for displaying observation from fastapi
+
+                // Existing observation handling
                 const obs = result.observation;
                 this.observation = clean(
-                   Array.isArray(obs)
-                   ? obs.map(item => item?.observation ?? "").filter(Boolean).join("\n\n")
-                   : typeof obs === "object" && obs !== null
-                   ? obs.observation ?? JSON.stringify(obs, null, 2)
-                   : obs
-                 );
-                
-                // Here the original code continues from the above change ...
+                    Array.isArray(obs)
+                    ? obs.map(item => item?.observation ?? "").filter(Boolean).join("\n\n")
+                    : typeof obs === "object" && obs !== null
+                    ? obs.observation ?? JSON.stringify(obs, null, 2)
+                    : obs
+                );
+
+                // Existing action handling
                 const action = clean(result.action);
                 const actionInput = clean(result.action_input);
 
@@ -74,6 +80,13 @@ export const useAgentStore = defineStore({
                         : action
                     : "";
 
+                // NEW: Store the source list and status from FastAPI
+                this.source = Array.isArray(result.source)
+                    ? result.source
+                    : [];
+
+                this.status = clean(result.status) || "unknown";
+
             } catch (e) {
 
                 console.error("Agent error:", e);
@@ -82,6 +95,10 @@ export const useAgentStore = defineStore({
                     e?.message ||
                     e?.detail?.message ||
                     String(e);
+
+                // NEW: Reflect request failure in the metadata
+                this.source = [];
+                this.status = "error";
 
             } finally {
 
@@ -97,6 +114,10 @@ export const useAgentStore = defineStore({
             this.observation = "";
             this.action = "";
             this.error = "";
+
+            // NEW: Clear metadata too
+            this.source = [];
+            this.status = "unknown";
 
         }
 

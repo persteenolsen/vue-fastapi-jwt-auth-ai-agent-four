@@ -1,7 +1,7 @@
 
 # 🤖 vue-fastapi-jwt-ai-agent
 
-Last updated: 20-10-2026
+Last updated: 21-10-2026
 
 A Vue 3 frontend using Pinia for state management and JWT authentication, designed to interact with a FastAPI AI Agent backend featuring LangChain, Groq, and agentic Retrieval-Augmented Generation (RAG).
 

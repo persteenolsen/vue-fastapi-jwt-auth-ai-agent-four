@@ -23,7 +23,7 @@ function onSubmit(values, { setErrors }) {
         <h3>Agentic RAG Chat Assistant with Tool Integration Using LangChain, FastAPI, and Vue</h3>
         
         <br/><br />
-        Last updated: 20-10-2026<br /><br />
+        Last updated: 21-10-2026<br /><br />
         
         <h2>Login</h2>
         <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }">
